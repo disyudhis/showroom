@@ -46,7 +46,7 @@ new class extends Component {
         <div class="flex justify-between h-16">
             <!-- Logo -->
             <div class="flex items-center">
-                <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center">
+                <a href="{{ route('dashboard.index') }}" wire:navigate class="flex items-center">
                     <img src="{{ asset('img/Logo tanpa kotak.png') }}" alt="KAC Logo" class="block h-28 w-auto" />
                     <span class="ml-2 text-xl font-bold text-gray-800 dark:text-gray-200">Karunia Auto Car</span>
                 </a>
@@ -54,7 +54,7 @@ new class extends Component {
 
             <!-- Desktop Navigation -->
             <div class="hidden sm:flex sm:items-center sm:ml-6 space-x-4">
-                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
+                <x-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard.*')" wire:navigate>
                     <i class="ri-dashboard-line mr-2"></i>Dashboard
                 </x-nav-link>
 
@@ -111,7 +111,7 @@ new class extends Component {
     <!-- Mobile Navigation Menu -->
     <div x-show="open" class="sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
+            <x-responsive-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard.*')" wire:navigate>
                 <i class="ri-dashboard-line mr-2"></i>Dashboard
             </x-responsive-nav-link>
 

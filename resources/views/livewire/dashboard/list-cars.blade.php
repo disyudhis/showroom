@@ -20,48 +20,57 @@ new class extends Component {
     </div>
 
     <!-- Car Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-white dark:bg-gray-900 transition-colors duration-300">
         @forelse($cars as $car)
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden group">
+            <div class="bg-white dark:bg-gray-800 shadow-lg rounded-xl overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-2xl group">
+                @php
+                    $clickbaitImage = $car->images->first();
+                @endphp
+
                 <div class="relative">
-                    <img src="{{ $car->image ? asset('storage/' . $car->image) : asset('img/placeholder-car.png') }}"
-                        alt="{{ $car->nama_mobil }}"
-                        class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105">
-                    <div
-                        class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
+                    @if($clickbaitImage)
+                        <img src="{{ Storage::url($clickbaitImage->image) }}"
+                             alt="{{ $car->nama_mobil }}"
+                             class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110">
+                    @else
+                        <div class="w-full h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                            No Image Available
+                        </div>
+                    @endif
+
+                    <div class="absolute top-4 right-4 bg-white/80 dark:bg-gray-900/80 px-3 py-1 rounded-full text-sm font-semibold">
+                        {{ $car->tahun_pembuatan }}
                     </div>
                 </div>
-                <div class="p-4">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-gray-200 mb-2">
-                        {{ $car->nama_mobil }}
-                    </h3>
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-gray-600 dark:text-gray-400">
-                            {{ $car->brand }} | {{ $car->tahun_pembuatan }}
-                        </span>
-                        <span class="font-semibold text-green-600 dark:text-green-400">
-                            A/N {{ $car->customer->nama_lengkap }}
-                        </span>
+
+                <div class="p-6 space-y-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">{{ $car->nama_mobil }}</h3>
+                        <p class="text-gray-600 dark:text-gray-400 flex items-center">
+                            <i class="ri-car-line mr-2"></i>
+                            {{ $car->brand }}
+                        </p>
                     </div>
 
-                    <!-- Detail Button -->
-                    <div class="flex justify-center">
-                        <a href="{{ route('cars.show', ['car' => $car->id]) }}"
-                            class="px-4 py-2 bg-blue-500 dark:bg-blue-600 text-white rounded-lg
-                                   hover:bg-blue-600 dark:hover:bg-blue-700
-                                   transition-colors duration-300
-                                   text-center w-full"
-                            wire:navigate>
+                    <div class="flex items-center text-gray-700 dark:text-gray-300">
+                        <i class="ri-user-line mr-2 text-blue-500"></i>
+                        {{ $car->customer->nama_lengkap }}
+                    </div>
+
+                    <div class="flex justify-between items-center mt-4">
+                        <a href="{{ route('dashboard.show', ['car' => $car->id]) }}"
+                           class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 transition-colors">
                             View Details
+                            <i class="ri-arrow-right-line ml-2"></i>
                         </a>
                     </div>
                 </div>
             </div>
         @empty
-            <div class="col-span-full text-center py-8">
-                <p class="text-gray-500 dark:text-gray-400">
-                    No cars found.
-                </p>
+            <div class="col-span-full text-center py-12 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <i class="ri-car-line text-5xl text-gray-600 dark:text-gray-400 mb-4"></i>
+                <h3 class="text-2xl text-gray-600 dark:text-gray-300 mb-4">No Cars Available</h3>
+                <p class="text-gray-500 dark:text-gray-400">Check back later or add new cars</p>
             </div>
         @endforelse
     </div>

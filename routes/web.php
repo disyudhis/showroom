@@ -5,14 +5,14 @@ use Livewire\Volt\Volt;
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+    ->name('dashboard.index');
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
 Route::middleware('auth')->group(function () {
-    Volt::route('/detail/{car}', 'dashboard.detail-car')->name('cars.show');
+    Volt::route('/detail/{car}', 'dashboard.detail-car')->name('dashboard.show');
     Route::view('input-data', 'input-data')->name('cars.store');
 });
 

@@ -29,6 +29,7 @@ new class extends Component {
 
     // Image uploads
     public $images = [];
+    public $vehicle_documents = [];
 
     // Validation rules
     public function rules()
@@ -38,9 +39,11 @@ new class extends Component {
             'no_mesin' => 'required|string|max:50',
             'no_polisi' => 'required|string|max:20',
             'tahun_pembuatan' => 'required|integer|min:1900|max:' . date('Y'),
+            'last_service_date' => 'nullable|date',
             'customer_nama_lengkap' => 'required|string|max:255',
             'customer_no_hp' => 'required|string|max:20',
             'images.*' => 'image|max:5120', // 5MB max per image
+            'vehicle_documents.*' => 'image|max:10240', // 10MB max per document
         ];
     }
 
@@ -77,6 +80,12 @@ new class extends Component {
                 $path = $image->store('cars', 'public');
                 $car->images()->create(['image' => $path]);
             }
+
+            // Handle service document uploads
+            foreach ($this->vehicle_documents as $document) {
+                $path = $document->store('vehicle_documents', 'public');
+                $car->documents()->create(['image' => $path]);
+            }
         });
 
         // Reset form after successful submission
@@ -84,12 +93,24 @@ new class extends Component {
         session()->flash('success', 'Mobil berhasil ditambahkan!');
         return redirect()->to('/dashboard');
     }
+
+    // Method to remove an image before upload
+    public function removeImage($index)
+    {
+        array_splice($this->images, $index, 1);
+    }
+
+    // Method to remove a service document before upload
+    public function removeVehicleDocuments($index)
+    {
+        array_splice($this->vehicle_documents, $index, 1);
+    }
 }; ?>
 
 <div class="container mx-auto px-4 py-12">
     <form wire:submit="save" class="max-w-4xl mx-auto space-y-8">
-        <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+        <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8">
+            <h2 class="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-6 border-b-2 border-blue-500 pb-3">
                 Tambah Mobil Baru
             </h2>
 
@@ -210,6 +231,17 @@ new class extends Component {
                             placeholder="Pajak 5 Tahun">
                     </div>
                 </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Tanggal Servis Terakhir
+                    </label>
+                    <input type="date" wire:model="last_service_date"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+                               rounded-xl focus:ring-2 focus:ring-blue-500
+                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                        placeholder="Tanggal Servis Terakhir">
+                </div>
             </div>
 
             <!-- Image Upload -->
@@ -240,47 +272,92 @@ new class extends Component {
 
                 @if ($images)
                     <div class="mt-4 grid grid-cols-4 gap-4">
-                        @foreach ($images as $image)
-                            <img src="{{ $image->temporaryUrl() }}" class="w-full h-24 object-cover rounded-lg">
+                        @foreach ($images as $index => $image)
+                            <div class="relative">
+                                <img src="{{ $image->temporaryUrl() }}" class="w-full h-24 object-cover rounded-lg">
+                                <button type="button" wire:click="removeImage({{ $index }})"
+                                    class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs">
+                                    X
+                                </button>
+                            </div>
                         @endforeach
                     </div>
                 @endif
             </div>
-        </div>
 
-        <!-- Customer Information Section -->
-        <div class="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-                Informasi Pemilik
-            </h2>
-
-            <div class="grid md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Nama Lengkap
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Berkas Kendaraan (STNK, KIR, dll)
+                </label>
+                <div class="flex items-center justify-center w-full">
+                    <label
+                        class="flex flex-col border-4 border-dashed w-full h-32 hover:bg-gray-100 hover:border-blue-300 group">
+                        <div class="flex flex-col items-center justify-center pt-7">
+                            <svg class="w-10 h-10 text-gray-400 group-hover:text-blue-600" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0013.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            <p class="lowercase text-sm text-gray-400 group-hover:text-blue-600 pt-1 tracking-wider">
+                                Unggah Berkas Kendaraan (STNK, KIR)
+                            </p>
+                        </div>
+                        <input type="file" wire:model="vehicle_documents" multiple class="hidden" />
                     </label>
-                    <input type="text" wire:model="customer_nama_lengkap"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
-                               rounded-xl focus:ring-2 focus:ring-blue-500
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                        placeholder="Nama Pemilik">
-                    @error('customer_nama_lengkap')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
                 </div>
+                @error('vehicle_documents.*')
+                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                @enderror
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Nomor HP
-                    </label>
-                    <input type="text" wire:model="customer_no_hp"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+                @if ($vehicle_documents)
+                    <div class="mt-4 space-y-2">
+                        @foreach ($vehicle_documents as $index => $document)
+                            <div class="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
+                                <span class="text-sm truncate">{{ $document->getClientOriginalName() }}</span>
+                                <button type="button"
+                                    wire:click="removeVehicleDocument({{ $index }})"
+                                    class="text-red-500 text-xs">
+                                    Hapus
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <!-- Customer Information Section -->
+            <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl p-8">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+                    Informasi Pemilik
+                </h2>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Nama Lengkap
+                        </label>
+                        <input type="text" wire:model="customer_nama_lengkap"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
                                rounded-xl focus:ring-2 focus:ring-blue-500
                                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                        placeholder="Nomor Telepon">
-                    @error('customer_no_hp')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
+                            placeholder="Nama Pemilik">
+                        @error('customer_nama_lengkap')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Nomor HP
+                        </label>
+                        <input type="text" wire:model="customer_no_hp"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+                                       rounded-xl focus:ring-2 focus:ring-blue-500
+                                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                            placeholder="Nomor Telepon">
+                        @error('customer_no_hp')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
                 </div>
 
                 <div class="col-span-full">
@@ -289,20 +366,21 @@ new class extends Component {
                     </label>
                     <textarea wire:model="customer_alamat" rows="3"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
-                               rounded-xl focus:ring-2 focus:ring-blue-500
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                                   rounded-xl focus:ring-2 focus:ring-blue-500
+                                   bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                         placeholder="Alamat Lengkap"></textarea>
                 </div>
             </div>
         </div>
 
         <!-- Submit Button -->
-        <div class="flex justify-end">
+        <div class="mt-8 flex justify-end">
             <button type="submit"
                 class="px-8 py-3 bg-blue-600 text-white rounded-xl
-                       hover:bg-blue-700 transition-colors
-                       flex items-center space-x-2
-                       font-semibold shadow-lg">
+                           hover:bg-blue-700 transition-all duration-300
+                           transform hover:-translate-y-1 hover:scale-105
+                           flex items-center space-x-2
+                           font-semibold shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
@@ -311,12 +389,6 @@ new class extends Component {
                 <span>Simpan Data Mobil</span>
             </button>
         </div>
-    </form>
-
-    @if (session('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
-            class="fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg">
-            {{ session('success') }}
-        </div>
-    @endif
+</div>
+</form>
 </div>
