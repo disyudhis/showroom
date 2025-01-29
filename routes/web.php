@@ -14,6 +14,7 @@ Route::view('profile', 'profile')
 Route::middleware('auth')->group(function () {
     Volt::route('/detail/{car}', 'dashboard.detail-car')->name('dashboard.show');
     Route::view('input-data', 'input-data')->name('cars.store');
+    Volt::route('/edit/{car}', 'input-data.edit')->name('cars.edit');
 });
 
 require __DIR__ . '/auth.php';

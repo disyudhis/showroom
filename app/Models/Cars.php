@@ -20,7 +20,8 @@ class Cars extends Model
         'last_service_date',
         'odo',
         'brand',
-        'customers_id'
+        'customers_id',
+        'odo_service'
     ];
 
     public function customer(){

@@ -14,11 +14,25 @@ mount(function (Cars $car) {
 });
 
 $delete = function () {
-    $this->car->delete();
-    $this->car->images()->delete();
-    $this->car->documents()->delete();
-    $this->car->customer()->delete();
-    return redirect()->route('dashboard');
+    try {
+        foreach ($this->car->images as $image) {
+            Storage::disk('public')->delete($image->image);
+        }
+
+        foreach ($this->car->documents as $document) {
+            Storage::disk('public')->delete($document->image);
+        }
+
+        // Delete database records
+        $this->car->images()->delete();
+        $this->car->documents()->delete();
+        $this->car->customer()->delete();
+        $this->car->delete();
+
+        return redirect()->route('dashboard.index')->with('success', 'Data mobil berhasil dihapus');
+    } catch (\Exception $e) {
+        session()->flash('error', 'Data mobil belum berhasil di hapus');
+    }
 };
 
 ?>
@@ -32,7 +46,7 @@ $delete = function () {
                 <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Foto Mobil</h2>
                 @include('components.image-carousel', [
                     'images' => $this->car->images,
-                    'title' => $this->car->nama_mobil
+                    'title' => $this->car->nama_mobil,
                 ])
             </div>
 
@@ -41,7 +55,7 @@ $delete = function () {
                 <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Berkas Kendaraan</h2>
                 @include('components.image-carousel', [
                     'images' => $this->car->documents,
-                    'title' => 'Dokumen Kendaraan'
+                    'title' => 'Dokumen Kendaraan',
                 ])
             </div>
         </div>
@@ -50,10 +64,8 @@ $delete = function () {
         <div>
             <!-- Header with Back Button -->
             <div class="flex items-center mb-8">
-                <button
-                    onclick="window.history.back()"
-                    class="mr-4 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                >
+                <button onclick="window.history.back()"
+                    class="mr-4 text-gray-600 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 transition-colors">
                     <i class="ri-arrow-left-line text-3xl"></i>
                 </button>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">
@@ -65,36 +77,27 @@ $delete = function () {
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
                 <div class="border-b border-gray-200 dark:border-gray-700">
                     <nav class="-mb-px flex">
-                        <button
-                            @click="activeTab = 'details'"
-                            class="w-1/3 py-4 text-center transition-colors"
+                        <button @click="activeTab = 'details'" class="w-1/3 py-4 text-center transition-colors"
                             :class="{
                                 'text-blue-600 border-blue-600 border-b-2': activeTab === 'details',
                                 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300': activeTab !== 'details'
-                            }"
-                        >
+                            }">
                             <i class="ri-car-line mr-2"></i>
                             Details
                         </button>
-                        <button
-                            @click="activeTab = 'owner'"
-                            class="w-1/3 py-4 text-center transition-colors"
+                        <button @click="activeTab = 'owner'" class="w-1/3 py-4 text-center transition-colors"
                             :class="{
                                 'text-blue-600 border-blue-600 border-b-2': activeTab === 'owner',
                                 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300': activeTab !== 'owner'
-                            }"
-                        >
+                            }">
                             <i class="ri-user-line mr-2"></i>
                             Pemilik
                         </button>
-                        <button
-                            @click="activeTab = 'additional'"
-                            class="w-1/3 py-4 text-center transition-colors"
+                        <button @click="activeTab = 'additional'" class="w-1/3 py-4 text-center transition-colors"
                             :class="{
                                 'text-blue-600 border-blue-600 border-b-2': activeTab === 'additional',
                                 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300': activeTab !== 'additional'
-                            }"
-                        >
+                            }">
                             <i class="ri-information-line mr-2"></i>
                             Tambahan
                         </button>
@@ -148,7 +151,7 @@ $delete = function () {
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Nomor Telepon</p>
                             <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                {{ $this->car->customer->no_hp }}
+                                {{ $this->car->customer->no_telp }}
                             </p>
                         </div>
                         <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
@@ -179,25 +182,35 @@ $delete = function () {
                                 {{ $this->car->last_service_date ? \Carbon\Carbon::parse($this->car->last_service_date)->format('d M Y') : 'Tidak tercatat' }}
                             </p>
                         </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Odo Service</p>
+                            <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                {{ $this->car->odo_service ? \Carbon\Carbon::parse($this->car->odo_service)->format('d M Y') : 'Tidak tercatat' }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Action Buttons -->
             <div class="mt-8 flex space-x-4">
-                <a href="#" class="flex-1 btn btn-primary flex items-center justify-center space-x-2 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
+                <a href="{{ route('cars.edit', ['car' => $this->car->id]) }}" wire:navigate
+                    class="flex-1 btn btn-primary flex items-center justify-center space-x-2 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors">
                     <i class="ri-edit-line"></i>
                     <span>Edit</span>
                 </a>
-                <button
-                    wire:click="delete"
-                    wire:confirm="Yakin ingin menghapus mobil ini?"
-                    class="flex-1 btn btn-danger flex items-center justify-center space-x-2 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
-                >
+                <button wire:click="delete" wire:confirm="Yakin ingin menghapus mobil ini?"
+                    class="flex-1 btn btn-danger flex items-center justify-center space-x-2 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors">
                     <i class="ri-delete-bin-line"></i>
                     <span>Hapus</span>
                 </button>
             </div>
         </div>
     </div>
+    @if (session('error'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)"
+            class="fixed bottom-5 right-5 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg">
+            {{ session('error') }}
+        </div>
+    @endif
 </div>

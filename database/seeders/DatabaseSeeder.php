@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
             'pajak_5tahun' => Carbon::parse('28-07-2026'),
             'no_polisi' => 'N 1745 AAK',
             'tahun_pembuatan' => '2021',
-            'last_service_date' => '28-07-2026',
+            'last_service_date' => Carbon::parse('28-07-2026'),
             'odo' => '21.756',
             'brand' => 'Toyota',
             'customers_id' => $customer->id

@@ -23,7 +23,8 @@ return new class extends Migration
             $table->date('pajak_5tahun')->nullable();
             $table->string('no_polisi')->nullable();
             $table->year('tahun_pembuatan')->nullable();
-            $table->string('last_service_date')->nullable();
+            $table->date('last_service_date')->nullable();
+            $table->date('odo_service')->nullable();
             $table->string('odo')->nullable();
             $table->string('nama_mobil')->nullable();
             $table->text('deskripsi')->nullable();

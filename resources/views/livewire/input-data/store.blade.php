@@ -21,6 +21,7 @@ new class extends Component {
     public $last_service_date = '';
     public $odo = '';
     public $brand = '';
+    public $odo_service = '';
 
     // Customer attributes
     public $customer_nama_lengkap = '';
@@ -42,6 +43,7 @@ new class extends Component {
             'last_service_date' => 'nullable|date',
             'customer_nama_lengkap' => 'required|string|max:255',
             'customer_no_hp' => 'required|string|max:20',
+            'odo_service' => 'required',
             'images.*' => 'image|max:5120', // 5MB max per image
             'vehicle_documents.*' => 'image|max:10240', // 10MB max per document
         ];
@@ -58,6 +60,7 @@ new class extends Component {
                 [
                     'nama_lengkap' => $this->customer_nama_lengkap,
                     'alamat' => $this->customer_alamat,
+                    'no_telp' => $this->customer_no_hp,
                 ],
             );
 
@@ -73,6 +76,7 @@ new class extends Component {
                 'last_service_date' => $this->last_service_date,
                 'odo' => $this->odo,
                 'brand' => $this->brand,
+                'odo_service' => $this->odo_service,
             ]);
 
             // Handle multiple image uploads
@@ -242,6 +246,16 @@ new class extends Component {
                                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                         placeholder="Tanggal Servis Terakhir">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Odo Servis Terakhir
+                    </label>
+                    <input type="date" wire:model="odo_service"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+                               rounded-xl focus:ring-2 focus:ring-blue-500
+                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                        placeholder="Odo Servis Terakhir">
+                </div>
             </div>
 
             <!-- Image Upload -->
@@ -314,8 +328,7 @@ new class extends Component {
                         @foreach ($vehicle_documents as $index => $document)
                             <div class="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
                                 <span class="text-sm truncate">{{ $document->getClientOriginalName() }}</span>
-                                <button type="button"
-                                    wire:click="removeVehicleDocument({{ $index }})"
+                                <button type="button" wire:click="removeVehicleDocument({{ $index }})"
                                     class="text-red-500 text-xs">
                                     Hapus
                                 </button>
@@ -389,6 +402,5 @@ new class extends Component {
                 <span>Simpan Data Mobil</span>
             </button>
         </div>
-</div>
-</form>
+    </form>
 </div>
