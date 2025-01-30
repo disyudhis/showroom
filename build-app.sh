@@ -18,10 +18,12 @@ npm run build
 php artisan optimize:clear
 
 # Cache the various components of the Laravel application
+php artisan key:generate
 php artisan config:cache
 php artisan event:cache
 php artisan route:cache
 php artisan view:cache
+php artisan storage:link
 
 
 # Check if the environment variable is set to "false" or not set at all
