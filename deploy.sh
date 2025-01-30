@@ -1,5 +1,5 @@
 #!/bin/bash
-# Make sure this file has executable permissions, run `chmod +x build-app.sh`
+# Make sure this file has executable permissions, run `chmod +x deploy.sh`
 
 # Exit the script if any command fails
 set -e
