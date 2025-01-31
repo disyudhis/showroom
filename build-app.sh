@@ -4,6 +4,8 @@
 # Exit the script if any command fails
 set -e
 
+php artisan config:clear
+
 # Build assets using NPM
 npm run build
 
