@@ -32,7 +32,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        $this->redirect(route('dashboard.index', absolute: false), navigate: true);
     }
 }; ?>
 
@@ -52,9 +52,9 @@ new #[Layout('layouts.guest')] class extends Component
                         <i class="ri-user-line text-gray-400"></i>
                     </div>
                     <x-text-input
-                        wire:model="form.name"
+                        wire:model="name"
                         id="name"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-700 dark:bg-black dark:text-gray-100"
                         type="text"
                         name="name"
                         required
@@ -63,7 +63,7 @@ new #[Layout('layouts.guest')] class extends Component
                         placeholder="Enter your full name"
                     />
                 </div>
-                <x-input-error :messages="$errors->get('form.name')" class="mt-2 text-red-500" />
+                <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-500" />
             </div>
 
             <!-- Email Input -->
@@ -74,9 +74,9 @@ new #[Layout('layouts.guest')] class extends Component
                         <i class="ri-mail-line text-gray-400"></i>
                     </div>
                     <x-text-input
-                        wire:model="form.email"
+                        wire:model="email"
                         id="email"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-red-900/20 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-700 dark:bg-black dark:text-gray-100"
                         type="email"
                         name="email"
                         required
@@ -84,7 +84,7 @@ new #[Layout('layouts.guest')] class extends Component
                         placeholder="Enter your email"
                     />
                 </div>
-                <x-input-error :messages="$errors->get('form.email')" class="mt-2 text-red-500" />
+                <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500" />
             </div>
 
             <!-- Password Input -->
@@ -95,9 +95,9 @@ new #[Layout('layouts.guest')] class extends Component
                         <i class="ri-lock-line text-gray-400"></i>
                     </div>
                     <x-text-input
-                        wire:model="form.password"
+                        wire:model="password"
                         id="password"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-red-900/20 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-700 dark:bg-black dark:text-gray-100"
                         type="password"
                         name="password"
                         required
@@ -105,7 +105,7 @@ new #[Layout('layouts.guest')] class extends Component
                         placeholder="Create a strong password"
                     />
                 </div>
-                <x-input-error :messages="$errors->get('form.password')" class="mt-2 text-red-500" />
+                <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500" />
             </div>
 
             <!-- Confirm Password -->
@@ -116,9 +116,9 @@ new #[Layout('layouts.guest')] class extends Component
                         <i class="ri-lock-2-line text-gray-400"></i>
                     </div>
                     <x-text-input
-                        wire:model="form.password_confirmation"
+                        wire:model="password_confirmation"
                         id="password_confirmation"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-red-900/20 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-700 dark:bg-black dark:text-gray-100"
                         type="password"
                         name="password_confirmation"
                         required
@@ -126,12 +126,12 @@ new #[Layout('layouts.guest')] class extends Component
                         placeholder="Confirm your password"
                     />
                 </div>
-                <x-input-error :messages="$errors->get('form.password_confirmation')" class="mt-2 text-red-500" />
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2 text-red-500" />
             </div>
 
             <!-- Register Button -->
             <div>
-                <x-primary-button class="w-full flex justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <x-primary-button class="w-full flex justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-white">
                     {{ __('Register') }}
                 </x-primary-button>
             </div>
@@ -143,7 +143,7 @@ new #[Layout('layouts.guest')] class extends Component
                     <a
                         href="{{ route('login') }}"
                         wire:navigate
-                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        class="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
                     >
                         Login here
                     </a>

@@ -40,12 +40,12 @@ new #[Layout('layouts.guest')] class extends Component
                 <x-input-label for="email" :value="__('Email')" class="text-gray-700 dark:text-gray-300 mb-2" />
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="ri-mail-line text-gray-400"></i>
+                        <i class="ri-mail-line text-gray-400 dark:text-gray-600"></i>
                     </div>
                     <x-text-input
                         wire:model="form.email"
                         id="email"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-red-900/20 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-700 dark:bg-black dark:text-gray-100"
                         type="email"
                         name="email"
                         required
@@ -62,12 +62,12 @@ new #[Layout('layouts.guest')] class extends Component
                 <x-input-label for="password" :value="__('Password')" class="text-gray-700 dark:text-gray-300 mb-2" />
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="ri-lock-line text-gray-400"></i>
+                        <i class="ri-lock-line text-gray-400 dark:text-gray-600"></i>
                     </div>
                     <x-text-input
                         wire:model="form.password"
                         id="password"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-red-900/20 rounded-lg focus:ring-2 focus:ring-red-500 dark:focus:ring-red-700 dark:bg-black dark:text-gray-100"
                         type="password"
                         name="password"
                         required
@@ -85,7 +85,7 @@ new #[Layout('layouts.guest')] class extends Component
                         wire:model="form.remember"
                         id="remember"
                         type="checkbox"
-                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:bg-gray-900 dark:border-gray-700"
+                        class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded dark:bg-black dark:border-red-900/20"
                     >
                     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">
                         {{ __('Remember me') }}
@@ -96,7 +96,7 @@ new #[Layout('layouts.guest')] class extends Component
                     <a
                         href="{{ route('password.request') }}"
                         wire:navigate
-                        class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        class="text-sm text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
                     >
                         {{ __('Forgot password?') }}
                     </a>
@@ -105,7 +105,7 @@ new #[Layout('layouts.guest')] class extends Component
 
             <!-- Login Button -->
             <div>
-                <x-primary-button class="w-full flex justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-blue-500 to-teal-400 hover:from-blue-600 hover:to-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <x-primary-button class="w-full flex justify-center py-2.5 px-4 rounded-lg bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 text-white">
                     {{ __('Log in') }}
                 </x-primary-button>
             </div>
@@ -117,7 +117,7 @@ new #[Layout('layouts.guest')] class extends Component
                     <a
                         href="{{ route('register') }}"
                         wire:navigate
-                        class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                        class="text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400"
                     >
                         Register here
                     </a>
