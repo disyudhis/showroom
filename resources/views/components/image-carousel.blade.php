@@ -8,9 +8,9 @@
 
             @forelse($images as $image)
                 <div class="w-full flex-shrink-0">
-                    <img src="{{ Storage::url($image->image) }}"
+                    <x-cld-image public-id="{{ $image->public_id }}"
                         alt="{{ $title ?? 'Image' }} - Image {{ $loop->iteration }}"
-                        class="w-full h-[500px] object-cover">
+                        class="w-full h-[500px] object-cover" />
                 </div>
             @empty
                 <div class="w-full h-[500px] bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
@@ -43,8 +43,8 @@
                         'border-blue-500': currentIndex === {{ $index }},
                         'border-transparent opacity-60 hover:opacity-100': currentIndex !== {{ $index }}
                     }">
-                    <img src="{{ Storage::url($image->image) }}" alt="Thumbnail {{ $index + 1 }}"
-                        class="w-full h-full object-cover">
+                    <x-cld-image public-id="{{ $image->public_id }}" alt="Thumbnail {{ $index + 1 }}"
+                        class="w-full h-full object-cover" />
                 </button>
             @endforeach
         </div>

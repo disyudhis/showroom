@@ -29,7 +29,7 @@ class Cars extends Model
     }
 
     public function images(){
-        return $this->hasMany(Image::class);
+        return $this->hasMany(Image::class, 'car_id');
     }
 
     public function documents(){

@@ -42,8 +42,8 @@ new class extends Component {
 
                 <div class="relative">
                     @if ($clickbaitImage)
-                        <img src="{{ Storage::url($clickbaitImage->image) }}" alt="{{ $car->nama_mobil }}"
-                            class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110">
+                        <x-cld-image public-id="{{ $clickbaitImage->public_id }}" alt="{{ $car->nama_mobil }}"
+                            class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110" />
                     @else
                         <div class="w-full h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                             No Image Available

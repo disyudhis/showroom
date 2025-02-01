@@ -44,58 +44,100 @@ new class extends Component {
             'customer_nama_lengkap' => 'required|string|max:255',
             'customer_no_hp' => 'required|string|max:20',
             'odo_service' => 'required',
-            'images.*' => 'image|max:5120', // 5MB max per image
-            'vehicle_documents.*' => 'image|max:10240', // 10MB max per document
+            'images.*' => 'image|max:1024', // 1MB max per image
+            'vehicle_documents.*' => 'image|max:1024', // 1MB max per document
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'images.*.max' => 'Ukuran gambar tidak boleh lebih dari 1MB.',
+            'vehicle_documents.*.max' => 'Ukuran dokumen tidak boleh lebih dari 1MB.',
         ];
     }
 
     public function save()
     {
-        $this->validate();
+        // Validasi data terlebih dahulu
+        $validatedData = $this->validate();
 
-        DB::transaction(function () {
-            // Create or find customer
-            $customer = Customers::firstOrCreate(
-                ['no_telp' => $this->customer_no_hp],
-                [
-                    'nama_lengkap' => $this->customer_nama_lengkap,
-                    'alamat' => $this->customer_alamat,
-                    'no_telp' => $this->customer_no_hp,
-                ],
-            );
+        try {
+            DB::transaction(function () use ($validatedData) {
+                // Buat atau temukan customer
+                $customer = Customers::firstOrCreate(
+                    ['no_telp' => $this->customer_no_hp],
+                    [
+                        'nama_lengkap' => $this->customer_nama_lengkap,
+                        'alamat' => $this->customer_alamat,
+                        'no_telp' => $this->customer_no_hp,
+                    ],
+                );
 
-            // Create car
-            $car = $customer->cars()->create([
-                'nama_mobil' => $this->nama_mobil,
-                'deskripsi' => $this->deskripsi,
-                'no_mesin' => $this->no_mesin,
-                'pajak_tahunan' => $this->pajak_tahunan,
-                'pajak_5tahun' => $this->pajak_5tahun,
-                'no_polisi' => $this->no_polisi,
-                'tahun_pembuatan' => $this->tahun_pembuatan,
-                'last_service_date' => $this->last_service_date,
-                'odo' => $this->odo,
-                'brand' => $this->brand,
-                'odo_service' => $this->odo_service,
-            ]);
+                // Buat mobil
+                $car = $customer->cars()->create([
+                    'nama_mobil' => $this->nama_mobil,
+                    'deskripsi' => $this->deskripsi,
+                    'no_mesin' => $this->no_mesin,
+                    'pajak_tahunan' => $this->pajak_tahunan,
+                    'pajak_5tahun' => $this->pajak_5tahun,
+                    'no_polisi' => $this->no_polisi,
+                    'tahun_pembuatan' => $this->tahun_pembuatan,
+                    'last_service_date' => $this->last_service_date,
+                    'odo' => $this->odo,
+                    'brand' => $this->brand,
+                    'odo_service' => $this->odo_service,
+                ]);
 
-            // Handle multiple image uploads
-            foreach ($this->images as $image) {
-                $path = $image->store('cars', 'public');
-                $car->images()->create(['image' => $path]);
+                // Upload gambar mobil
+                if (!empty($this->images)) {
+                    $this->uploadImages($car, $this->images, 'cars', $car->images());
+                }
+
+                // Upload dokumen kendaraan
+                if (!empty($this->vehicle_documents)) {
+                    $this->uploadImages($car, $this->vehicle_documents, 'vehicle_documents', $car->documents());
+                }
+            });
+
+            // Reset form dan redirect setelah berhasil
+            $this->reset();
+            session()->flash('success', 'Mobil berhasil ditambahkan!');
+            return redirect()->to('/dashboard');
+        } catch (\Exception $e) {
+            // Tangani error yang mungkin terjadi
+            DB::rollBack();
+            session()->flash('error', 'Gagal menambahkan mobil: ' . $e->getMessage());
+            \Log::error('Error adding car: ' . $e->getMessage());
+        }
+    }
+
+    // Method baru untuk upload gambar/dokumen
+    protected function uploadImages($car, $files, $folder, $relation)
+    {
+        foreach ($files as $file) {
+            try {
+                // Upload ke Cloudinary
+                $cloudinaryImage = cloudinary()->upload($file->getRealPath(), [
+                    'folder' => $folder,
+                    'overwrite' => true,
+                    'resource_type' => 'auto',
+                ]);
+
+                // Simpan informasi file
+                $relation->create([
+                    'url' => $cloudinaryImage->getSecurePath(),
+                    'public_id' => $cloudinaryImage->getPublicId(),
+                    'car_id' => $car->id,
+                ]);
+            } catch (\Exception $e) {
+                // Log error untuk setiap file yang gagal diupload
+                \Log::error("Failed to upload file in $folder: " . $e->getMessage());
+
+                // Optional: Lanjutkan proses upload file lainnya jika satu file gagal
+                continue;
             }
-
-            // Handle service document uploads
-            foreach ($this->vehicle_documents as $document) {
-                $path = $document->store('vehicle_documents', 'public');
-                $car->documents()->create(['image' => $path]);
-            }
-        });
-
-        // Reset form after successful submission
-        $this->reset();
-        session()->flash('success', 'Mobil berhasil ditambahkan!');
-        return redirect()->to('/dashboard');
+        }
     }
 
     // Method to remove an image before upload
@@ -324,13 +366,13 @@ new class extends Component {
                 @enderror
 
                 @if ($vehicle_documents)
-                    <div class="mt-4 space-y-2">
-                        @foreach ($vehicle_documents as $index => $document)
-                            <div class="flex items-center justify-between bg-gray-100 p-2 rounded-lg">
-                                <span class="text-sm truncate">{{ $document->getClientOriginalName() }}</span>
-                                <button type="button" wire:click="removeVehicleDocument({{ $index }})"
-                                    class="text-red-500 text-xs">
-                                    Hapus
+                    <div class="mt-4 grid grid-cols-4 gap-4">
+                        @foreach ($vehicle_documents as $index => $image)
+                            <div class="relative">
+                                <img src="{{ $image->temporaryUrl() }}" class="w-full h-24 object-cover rounded-lg">
+                                <button type="button" wire:click="removeVehicleDocuments({{ $index }})"
+                                    class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs">
+                                    X
                                 </button>
                             </div>
                         @endforeach
@@ -387,20 +429,27 @@ new class extends Component {
         </div>
 
         <!-- Submit Button -->
-        <div class="mt-8 flex justify-end">
-            <button type="submit"
-                class="px-8 py-3 bg-blue-600 text-white rounded-xl
-                           hover:bg-blue-700 transition-all duration-300
-                           transform hover:-translate-y-1 hover:scale-105
-                           flex items-center space-x-2
-                           font-semibold shadow-lg">
+        <button type="submit" wire:click.prevent="save" wire:loading.attr="disabled" wire:target="save"
+            class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg
+          transition-all duration-300 ease-in-out
+          hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+          relative flex items-center justify-center min-h-[48px]">
+
+            <!-- Normal State -->
+            <div wire:loading.remove class="flex items-center justify-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
                         clip-rule="evenodd" />
                 </svg>
                 <span>Simpan Data Mobil</span>
-            </button>
-        </div>
+            </div>
+
+            <!-- Loading State -->
+            <div wire:loading class="absolute inset-0 flex items-center justify-center gap-2 bg-blue-600">
+                <div class="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                <span>Sedang Mengirim...</span>
+            </div>
+        </button>
     </form>
 </div>

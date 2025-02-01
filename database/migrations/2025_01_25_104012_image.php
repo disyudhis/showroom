@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->string('image')->nullable();
-            $table->unsignedBigInteger('cars_id')->nullable();
-            $table->foreign('cars_id')->references('id')->on('cars')->onDelete('cascade');
+            $table->string('url')->nullable();
+            $table->string('public_id')->nullable();
+            $table->unsignedBigInteger('car_id')->nullable();
+            $table->foreign('car_id')->references('id')->on('cars')->onDelete('cascade');
             $table->timestamps();
         });
     }

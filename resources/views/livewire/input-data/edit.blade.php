@@ -69,7 +69,8 @@ mount(function (Cars $car) {
         ->map(function ($image) {
             return [
                 'id' => $image->id,
-                'image' => $image->image,
+                'url' => $image->url,
+                'public_id' => $image->public_id,
             ];
         })
         ->toArray();
@@ -78,7 +79,8 @@ mount(function (Cars $car) {
         ->map(function ($doc) {
             return [
                 'id' => $doc->id,
-                'image' => $doc->image,
+                'url' => $doc->url,
+                'public_id' => $doc->public_id,
             ];
         })
         ->toArray();
@@ -86,24 +88,28 @@ mount(function (Cars $car) {
 
 $removeExistingImage = function ($imageId) {
     try {
+        // Cari gambar di database
         $image = Image::findOrFail($imageId);
 
-        // Delete the physical file
-        if (Storage::exists($image->image)) {
-            Storage::delete($image->image);
+        // Hapus gambar dari Cloudinary menggunakan public_id
+        if ($image->public_id) {
+            cloudinary()->destroy($image->public_id);
         }
 
-        // Delete from database
+        // Hapus dari database
         $image->delete();
 
-        // Update the state
+        // Update state
         $this->existingImages = array_filter($this->existingImages, function ($img) use ($imageId) {
             return $img['id'] !== $imageId;
         });
 
         session()->flash('success', 'Gambar berhasil dihapus');
     } catch (\Exception $e) {
-        session()->flash('error', 'Gambar gagal dihapus');
+        // Log error untuk debugging
+        \Log::error('Error deleting image: ' . $e->getMessage());
+
+        session()->flash('error', 'Gambar gagal dihapus: ' . $e->getMessage());
     }
 };
 
@@ -112,8 +118,8 @@ $removeExistingDocument = function ($documentId) {
         $document = Documents::findOrFail($documentId);
 
         // Delete the physical file
-        if (Storage::exists($document->image)) {
-            Storage::delete($document->image);
+        if ($document->public_id) {
+            cloudinary()->destroy($document->public_id);
         }
 
         // Delete from database
@@ -146,10 +152,16 @@ $save = function () {
         // Handle new car images
         if ($this->newCarImages) {
             foreach ($this->newCarImages as $image) {
-                $path = $image->store('cars', 'public');
+                $cloudinaryImage = cloudinary()->upload($image->getRealPath(), [
+                    'folder' => 'cars',
+                    'overwrite' => true,
+                    'resource_type' => 'auto',
+                ]);
 
                 $car->images()->create([
-                    'image' => $path,
+                    'url' => $cloudinaryImage->getSecurePath(),
+                    'public_id' => $cloudinaryImage->getPublicId(),
+                    'car_id' => $car->id,
                 ]);
             }
         }
@@ -157,10 +169,15 @@ $save = function () {
         // Handle new documents
         if ($this->newDocuments) {
             foreach ($this->newDocuments as $document) {
-                $path = $document->store('vehicle_documents', 'public');
-
+                $cloudinaryImage = cloudinary()->upload($document->getRealPath(), [
+                    'folder' => 'vehicle_documents',
+                    'overwrite' => true,
+                    'resource_type' => 'auto',
+                ]);
                 $car->documents()->create([
-                    'image' => $path,
+                    'url' => $cloudinaryImage->getSecurePath(),
+                    'public_id' => $cloudinaryImage->getPublicId(),
+                    'car_id' => $car->id,
                 ]);
             }
         }
@@ -177,7 +194,8 @@ $save = function () {
             ->map(function ($image) {
                 return [
                     'id' => $image->id,
-                    'image' => $image->image,
+                    'url' => $image->url,
+                    'public_id' => $image->public_id,
                 ];
             })
             ->toArray();
@@ -187,7 +205,8 @@ $save = function () {
             ->map(function ($doc) {
                 return [
                     'id' => $doc->id,
-                    'image' => $doc->image,
+                    'url' => $doc->url,
+                    'public_id' => $doc->public_id,
                 ];
             })
             ->toArray();
@@ -312,26 +331,41 @@ $save = function () {
 
                 <!-- Car Images Section -->
                 <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Foto Mobil</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Berkas Kendaraan</h3>
 
-                    <!-- Existing Images -->
+                    <!-- Existing Documents -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @foreach ($existingImages as $image)
                             <div
                                 class="relative group aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                <img src="{{ Storage::url($image['image']) }}" class="w-full h-full object-cover">
+                                <!-- Image -->
+                                <x-cld-image public-id="{{ $image['public_id'] }}" class="w-full h-full object-cover" />
+
+                                <!-- Hover Overlay -->
                                 <div
                                     class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity">
                                     <button type="button" wire:click="removeExistingImage({{ $image['id'] }})"
-                                        class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                        wire:loading.attr="disabled"
+                                        class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
+                                </div>
+
+                                <!-- Loading Overlay -->
+                                <div wire:loading wire:target="removeExistingImage({{ $image['id'] }})"
+                                    class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center transition-all">
+                                    <div class="flex flex-col items-center space-y-2">
+                                        <div
+                                            class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin">
+                                        </div>
+                                        <span class="text-white text-sm">Menghapus...</span>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <!-- Upload New Images -->
+                    <!-- Upload New images -->
                     <div class="mt-4">
                         <input type="file" wire:model="newCarImages" multiple accept="image/*"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
@@ -347,13 +381,29 @@ $save = function () {
                         @foreach ($existingDocuments as $document)
                             <div
                                 class="relative group aspect-video rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
-                                <img src="{{ Storage::url($document['image']) }}" class="w-full h-full object-cover">
+                                <!-- Image -->
+                                <x-cld-image public-id="{{ $document['public_id'] }}"
+                                    class="w-full h-full object-cover" />
+
+                                <!-- Hover Overlay -->
                                 <div
                                     class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity">
                                     <button type="button" wire:click="removeExistingDocument({{ $document['id'] }})"
-                                        class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                        wire:loading.attr="disabled"
+                                        class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
                                         <i class="ri-delete-bin-line"></i>
                                     </button>
+                                </div>
+
+                                <!-- Loading Overlay -->
+                                <div wire:loading wire:target="removeExistingDocument({{ $document['id'] }})"
+                                    class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center transition-all">
+                                    <div class="flex flex-col items-center space-y-2">
+                                        <div
+                                            class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin">
+                                        </div>
+                                        <span class="text-white text-sm">Menghapus...</span>
+                                    </div>
                                 </div>
                             </div>
                         @endforeach
@@ -387,9 +437,20 @@ $save = function () {
                     class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors">
                     Cancel
                 </button>
-                <button type="submit"
-                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Save Changes
+
+                <button type="submit" wire:click.prevent="save" wire:loading.attr="disabled" wire:target="save"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors relative overflow-hidden flex items-center justify-center">
+
+                    <!-- Normal State -->
+                    <span wire:loading.remove class="flex items-center space-x-2">
+                        <span>Save Changes</span>
+                    </span>
+
+                    <!-- Loading State -->
+                    <div wire:loading wire:target="save" class="flex items-center justify-center space-x-2">
+                        <div class="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
+                        <span>Saving...</span>
+                    </div>
                 </button>
             </div>
         </form>
