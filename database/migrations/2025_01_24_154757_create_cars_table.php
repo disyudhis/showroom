@@ -24,10 +24,11 @@ return new class extends Migration
             $table->string('no_polisi')->nullable();
             $table->year('tahun_pembuatan')->nullable();
             $table->date('last_service_date')->nullable();
-            $table->date('odo_service')->nullable();
+            $table->string('odo_service')->nullable();
             $table->string('odo')->nullable();
             $table->string('nama_mobil')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->enum('status', ['SOLD', 'AVAILABLE'])->nullable();
             $table->timestamps();
         });
     }

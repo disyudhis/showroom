@@ -51,8 +51,8 @@ new class extends Component {
                     @endif
 
                     <div
-                        class="absolute top-4 right-4 bg-white/80 dark:bg-gray-900/80 px-3 py-1 rounded-full text-sm font-semibold">
-                        {{ $car->tahun_pembuatan }}
+                        class="absolute top-4 right-4 {{ $car->status_color }} px-3 py-1 rounded-full text-sm font-semibold">
+                        {{ $car->status }}
                     </div>
                 </div>
 

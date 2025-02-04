@@ -13,7 +13,11 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                montserrat: ['Montserrat', 'sans-serif'],
             },
+            animation: {
+                spin: 'spin 1s linear infinite',
+            }
         },
     },
 

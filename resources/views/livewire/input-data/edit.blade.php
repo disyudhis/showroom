@@ -57,6 +57,7 @@ mount(function (Cars $car) {
         'odo' => $car->odo,
         'odo_service' => $car->odo_service,
         'brand' => $car->brand,
+        'status' => $car->status
     ];
 
     $this->customer = [
@@ -305,7 +306,7 @@ $save = function () {
 
                         <div class="space-y-2">
                             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">ODO Service</label>
-                            <input wire:model="car.odo_service" type="date"
+                            <input wire:model="car.odo_service" type="text"
                                 class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700">
                         </div>
 
@@ -325,6 +326,22 @@ $save = function () {
                             <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Pajak 5 Tahun</label>
                             <input wire:model="car.pajak_5tahun" type="date"
                                 class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Status Kendaraan</label>
+                            <div class="flex flex-col space-y-2">
+                                <label class="inline-flex items-center">
+                                    <input wire:model="car.status" type="radio" value="SOLD"
+                                           class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">TERJUAL</span>
+                                </label>
+
+                                <label class="inline-flex items-center">
+                                    <input wire:model="car.status" type="radio" value="AVAILABLE"
+                                           class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">TERSEDIA</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

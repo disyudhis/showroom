@@ -22,6 +22,7 @@ new class extends Component {
     public $odo = '';
     public $brand = '';
     public $odo_service = '';
+    public $status = '';
 
     // Customer attributes
     public $customer_nama_lengkap = '';
@@ -46,6 +47,7 @@ new class extends Component {
             'odo_service' => 'required',
             'images.*' => 'image|max:1024', // 1MB max per image
             'vehicle_documents.*' => 'image|max:1024', // 1MB max per document
+            'status' => 'required',
         ];
     }
 
@@ -87,6 +89,7 @@ new class extends Component {
                     'odo' => $this->odo,
                     'brand' => $this->brand,
                     'odo_service' => $this->odo_service,
+                    'status' => $this->status,
                 ]);
 
                 // Upload gambar mobil
@@ -292,164 +295,239 @@ new class extends Component {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Odo Servis Terakhir
                     </label>
-                    <input type="date" wire:model="odo_service"
+                    <input type="text" wire:model="odo_service"
                         class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
                                rounded-xl focus:ring-2 focus:ring-blue-500
                                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
                         placeholder="Odo Servis Terakhir">
                 </div>
-            </div>
-
-            <!-- Image Upload -->
-            <div class="mt-6">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Foto Mobil (Bisa Multiple)
-                </label>
-                <div class="flex items-center justify-center w-full">
-                    <label
-                        class="flex flex-col border-4 border-dashed w-full h-32 hover:bg-gray-100 hover:border-blue-300 group">
-                        <div class="flex flex-col items-center justify-center pt-7">
-                            <svg class="w-10 h-10 text-gray-400 group-hover:text-blue-600" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                            <p class="lowercase text-sm text-gray-400 group-hover:text-blue-600 pt-1 tracking-wider">
-                                Select a photo
-                            </p>
-                        </div>
-                        <input type="file" wire:model="images" multiple class="hidden" accept="image/*" />
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">
+                        Status Terjual
                     </label>
-                </div>
-                @error('images.*')
-                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                @enderror
-
-                @if ($images)
-                    <div class="mt-4 grid grid-cols-4 gap-4">
-                        @foreach ($images as $index => $image)
-                            <div class="relative">
-                                <img src="{{ $image->temporaryUrl() }}" class="w-full h-24 object-cover rounded-lg">
-                                <button type="button" wire:click="removeImage({{ $index }})"
-                                    class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs">
-                                    X
-                                </button>
+                    <div class="flex gap-4">
+                        <!-- Available Option -->
+                        <label class="relative flex-1">
+                            <input type="radio" wire:model="status" name="status" value="available"
+                                class="peer sr-only">
+                            <div
+                                class="w-full cursor-pointer rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4
+                                        transition-all duration-300 ease-in-out
+                                        hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md
+                                        peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30
+                                        peer-checked:shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <i
+                                            class="ri-checkbox-blank-circle-line text-xl text-gray-400 dark:text-gray-500
+                                                transition-colors duration-300
+                                                peer-checked:text-blue-500 group-hover:text-blue-400"></i>
+                                        <span
+                                            class="font-medium text-gray-600 dark:text-gray-300
+                                                   transition-colors duration-300
+                                                   group-hover:text-blue-500 peer-checked:text-blue-700 dark:peer-checked:text-blue-400">
+                                            Available
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Unit tersedia untuk dijual</p>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-
-            <div class="mt-6">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Berkas Kendaraan (STNK, KIR, dll)
-                </label>
-                <div class="flex items-center justify-center w-full">
-                    <label
-                        class="flex flex-col border-4 border-dashed w-full h-32 hover:bg-gray-100 hover:border-blue-300 group">
-                        <div class="flex flex-col items-center justify-center pt-7">
-                            <svg class="w-10 h-10 text-gray-400 group-hover:text-blue-600" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0013.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                            <p class="lowercase text-sm text-gray-400 group-hover:text-blue-600 pt-1 tracking-wider">
-                                Unggah Berkas Kendaraan (STNK, KIR)
-                            </p>
-                        </div>
-                        <input type="file" wire:model="vehicle_documents" multiple class="hidden" />
-                    </label>
-                </div>
-                @error('vehicle_documents.*')
-                    <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                @enderror
-
-                @if ($vehicle_documents)
-                    <div class="mt-4 grid grid-cols-4 gap-4">
-                        @foreach ($vehicle_documents as $index => $image)
-                            <div class="relative">
-                                <img src="{{ $image->temporaryUrl() }}" class="w-full h-24 object-cover rounded-lg">
-                                <button type="button" wire:click="removeVehicleDocuments({{ $index }})"
-                                    class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs">
-                                    X
-                                </button>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-
-            <!-- Customer Information Section -->
-            <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl p-8">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-                    Informasi Pemilik
-                </h2>
-
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Nama Lengkap
                         </label>
-                        <input type="text" wire:model="customer_nama_lengkap"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+
+                        <!-- Sold Option -->
+                        <label class="relative flex-1">
+                            <input type="radio" wire:model="status" name="status" value="sold"
+                                class="peer sr-only">
+                            <div
+                                class="w-full cursor-pointer rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4
+                                        transition-all duration-300 ease-in-out
+                                        hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md
+                                        peer-checked:border-blue-500 peer-checked:bg-blue-50 dark:peer-checked:bg-blue-900/30
+                                        peer-checked:shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <i
+                                            class="ri-checkbox-blank-circle-line text-xl text-gray-400 dark:text-gray-500
+                                                transition-colors duration-300
+                                                peer-checked:text-blue-500 group-hover:text-blue-400"></i>
+                                        <span
+                                            class="font-medium text-gray-600 dark:text-gray-300
+                                                   transition-colors duration-300
+                                                   group-hover:text-blue-500 peer-checked:text-blue-700 dark:peer-checked:text-blue-400">
+                                            Sold
+                                        </span>
+                                    </div>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Unit sudah terjual</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Foto Mobil (Bisa Multiple)
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label
+                            class="flex flex-col border-4 border-dashed w-full h-32 hover:bg-gray-100 hover:border-blue-300 group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-10 h-10 text-gray-400 group-hover:text-blue-600" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                <p
+                                    class="lowercase text-sm text-gray-400 group-hover:text-blue-600 pt-1 tracking-wider">
+                                    Select a photo
+                                </p>
+                            </div>
+                            <input type="file" wire:model="images" multiple class="hidden" accept="image/*" />
+                        </label>
+                    </div>
+                    @error('images.*')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
+
+                    @if ($images)
+                        <div class="mt-4 grid grid-cols-4 gap-4">
+                            @foreach ($images as $index => $image)
+                                <div class="relative">
+                                    <img src="{{ $image->temporaryUrl() }}"
+                                        class="w-full h-24 object-cover rounded-lg">
+                                    <button type="button" wire:click="removeImage({{ $index }})"
+                                        class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs">
+                                        X
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Berkas Kendaraan (STNK, KIR, dll)
+                    </label>
+                    <div class="flex items-center justify-center w-full">
+                        <label
+                            class="flex flex-col border-4 border-dashed w-full h-32 hover:bg-gray-100 hover:border-blue-300 group">
+                            <div class="flex flex-col items-center justify-center pt-7">
+                                <svg class="w-10 h-10 text-gray-400 group-hover:text-blue-600" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0013.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                <p
+                                    class="lowercase text-sm text-gray-400 group-hover:text-blue-600 pt-1 tracking-wider">
+                                    Unggah Berkas Kendaraan (STNK, KIR)
+                                </p>
+                            </div>
+                            <input type="file" wire:model="vehicle_documents" multiple class="hidden" />
+                        </label>
+                    </div>
+                    @error('vehicle_documents.*')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
+
+                    @if ($vehicle_documents)
+                        <div class="mt-4 grid grid-cols-4 gap-4">
+                            @foreach ($vehicle_documents as $index => $image)
+                                <div class="relative">
+                                    <img src="{{ $image->temporaryUrl() }}"
+                                        class="w-full h-24 object-cover rounded-lg">
+                                    <button type="button" wire:click="removeVehicleDocuments({{ $index }})"
+                                        class="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full text-xs">
+                                        X
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Customer Information Section -->
+                <div class="mt-8 bg-white dark:bg-gray-800 rounded-2xl p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+                        Informasi Pemilik
+                    </h2>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Nama Lengkap
+                            </label>
+                            <input type="text" wire:model="customer_nama_lengkap"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
                                rounded-xl focus:ring-2 focus:ring-blue-500
                                bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                            placeholder="Nama Pemilik">
-                        @error('customer_nama_lengkap')
-                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Nomor HP
-                        </label>
-                        <input type="text" wire:model="customer_no_hp"
-                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+                                placeholder="Nama Pemilik">
+                            @error('customer_nama_lengkap')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Nomor HP
+                            </label>
+                            <input type="text" wire:model="customer_no_hp"
+                                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
                                        rounded-xl focus:ring-2 focus:ring-blue-500
                                        bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                            placeholder="Nomor Telepon">
-                        @error('customer_no_hp')
-                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                        @enderror
+                                placeholder="Nomor Telepon">
+                            @error('customer_no_hp')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-span-full">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Alamat
-                    </label>
-                    <textarea wire:model="customer_alamat" rows="3"
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
+                    <div class="col-span-full">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Alamat
+                        </label>
+                        <textarea wire:model="customer_alamat" rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700
                                    rounded-xl focus:ring-2 focus:ring-blue-500
                                    bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
-                        placeholder="Alamat Lengkap"></textarea>
+                            placeholder="Alamat Lengkap"></textarea>
+                    </div>
                 </div>
             </div>
+
+            <!-- Submit Button -->
+            <button type="submit" wire:click.prevent="save" wire:loading.attr="disabled" wire:target="save"
+                class="w-full relative overflow-hidden group min-h-[48px] rounded-lg">
+                <!-- Base Button -->
+                <div class="absolute inset-0 bg-blue-600 group-hover:bg-blue-700 transition-colors"></div>
+
+                <!-- Shine Effect -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000">
+                </div>
+
+                <!-- Content Container -->
+                <div class="relative flex items-center justify-center px-6 py-3 text-white">
+                    <!-- Normal State -->
+                    <div wire:loading.remove wire:target="save"
+                        class="flex items-center justify-center gap-2 transition-all duration-300">
+                        <svg class="w-5 h-5 transition-transform group-hover:rotate-12 group-hover:scale-110"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Simpan Data Mobil</span>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div wire:loading wire:target="save" class="flex gap-2">
+                        <div class="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin">
+                        </div>
+                    </div>
+                </div>
+            </button>
         </div>
-
-        <!-- Submit Button -->
-        <button type="submit" wire:click.prevent="save" wire:loading.attr="disabled" wire:target="save"
-            class="w-full px-6 py-3 bg-blue-600 text-white rounded-lg
-          transition-all duration-300 ease-in-out
-          hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-          relative flex items-center justify-center min-h-[48px]">
-
-            <!-- Normal State -->
-            <div wire:loading.remove class="flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
-                        clip-rule="evenodd" />
-                </svg>
-                <span>Simpan Data Mobil</span>
-            </div>
-
-            <!-- Loading State -->
-            <div wire:loading class="absolute inset-0 flex items-center justify-center gap-2 bg-blue-600">
-                <div class="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
-                <span>Sedang Mengirim...</span>
-            </div>
-        </button>
     </form>
 </div>

@@ -9,6 +9,9 @@ class Cars extends Model
 {
     use HasFactory;
 
+    const STATUS_SOLD = "SOLD";
+    const STATUS_AVAILABLE = "AVAILABLE";
+
     protected $fillable = [
         'nama_mobil',
         'deskripsi',
@@ -21,7 +24,8 @@ class Cars extends Model
         'odo',
         'brand',
         'customers_id',
-        'odo_service'
+        'odo_service',
+        'status'
     ];
 
     public function customer(){
@@ -34,5 +38,17 @@ class Cars extends Model
 
     public function documents(){
         return $this->hasMany(Documents::class, 'car_id');
+    }
+
+    public function hpps(){
+        return $this->hasMany(Hpp::class, 'car_id');
+    }
+
+    public function getStatusColorAttribute() {
+        if($this->status == self::STATUS_SOLD){
+            return 'bg-gray-500 text-white';
+        }else {
+            return 'bg-green-500 text-white';
+        }
     }
 }
